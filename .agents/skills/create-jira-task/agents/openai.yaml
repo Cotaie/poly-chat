@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Jira Task"
+  short_description: "Draft and prepare Jira task tickets"
+  default_prompt: "Use $create-jira-task to turn this request into a Jira task."

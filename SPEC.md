@@ -156,7 +156,7 @@ poly-chat/
     registry/
     artifacts/
   experiments/
-  spec.md
+  SPEC.md
   README.md
 ```
 
