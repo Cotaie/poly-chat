@@ -38,4 +38,5 @@ models/artifacts/
 *.onnx
 
 # Local Codex/runtime state
+.codex/config.toml
 .codex-log/

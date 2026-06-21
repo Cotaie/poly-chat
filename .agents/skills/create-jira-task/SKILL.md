@@ -79,3 +79,5 @@ When a Jira tool is available:
 2. Map draft fields to the tool's required fields.
 3. Use the smallest safe set of fields needed to create the issue.
 4. If creation fails, report the error and provide the draft so the user can still proceed.
+
+For spec-driven planning, prefer creating Jira issues from stable product scope rather than speculative implementation details. When splitting Poly Chat work, keep frontend, backend, model registry, and documentation tasks clear enough that each issue can be owned independently.

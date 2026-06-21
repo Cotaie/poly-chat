@@ -1,0 +1,11 @@
+# Install with:
+#   uv tool install mcp-atlassian==0.21.1
+#
+# Copy this block to ~/.codex/config.toml or to a trusted project-local
+# .codex/config.toml. Keep real Jira credentials in .env, your shell,
+# keychain, or private user config.
+
+[mcp_servers.mcp-atlassian]
+command = "/home/YOUR_USER/.local/bin/mcp-atlassian"
+args = ["--env-file", "/absolute/path/to/poly-chat/.env"]
+default_tools_approval_mode = "prompt"

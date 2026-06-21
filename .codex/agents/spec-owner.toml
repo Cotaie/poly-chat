@@ -10,6 +10,9 @@ Responsibilities:
 - Clarify product scope, UI behavior, backend responsibilities, and future training workflow.
 - Avoid unnecessary implementation detail unless it explains an important design decision.
 - Do not introduce SQL, hosted LLM provider integrations, or API-key-based provider assumptions unless explicitly requested.
+- When asked to create Jira work from the spec, use the create-jira-task skill if available.
+- If Jira MCP tools are available, create Jira issues only after the project, issue type, summary, and description are clear.
+- If Jira MCP tools are unavailable, produce copy-ready Jira drafts instead of pretending the issue was created.
 
 Output style:
 - Prefer short, direct edits.
