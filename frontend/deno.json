@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "dev": "deno run -A npm:esbuild@0.24.0 src/main.ts --bundle --outfile=dist/main.js --servedir=.",
+    "build": "deno run -A npm:esbuild@0.24.0 src/main.ts --bundle --outfile=dist/main.js",
+    "check": "deno check src/main.ts"
+  },
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "deno.ns"],
+    "strict": true
+  }
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poly Chat</title>
+  </head>
+  <body>
+    <main class="workbench">
+      <header class="topbar">
+        <div>
+          <h1>Poly Chat</h1>
+          <p>Compare small local language models by prompt, settings, output, and speed.</p>
+        </div>
+        <span class="status" id="status">Ready</span>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar" aria-label="Available models">
+          <h2>Models</h2>
+          <div class="model-list" id="model-list"></div>
+        </aside>
+
+        <section class="panel details-panel">
+          <h2>Model Details</h2>
+          <dl class="details-grid" id="model-details"></dl>
+          <p class="notes" id="model-notes"></p>
+        </section>
+
+        <section class="panel prompt-panel">
+          <h2>Prompt</h2>
+          <textarea id="prompt" aria-label="Prompt">To be or not to be</textarea>
+
+          <div class="controls">
+            <label>
+              Max output
+              <input id="max-tokens" min="1" type="number" value="40" />
+            </label>
+            <label>
+              Context window
+              <input id="context-window" min="1" type="number" value="64" />
+            </label>
+            <label>
+              Seed
+              <input id="seed" type="number" value="42" />
+            </label>
+          </div>
+
+          <button class="primary-action" id="generate" type="button">Generate</button>
+          <p class="error" id="error"></p>
+        </section>
+
+        <section class="panel output-panel">
+          <h2>Output</h2>
+          <pre id="output">Run a prompt to see generated output.</pre>
+          <div class="metrics" id="metrics"></div>
+        </section>
+
+        <section class="panel comparison-panel">
+          <h2>Recent Comparisons</h2>
+          <div class="comparison-list" id="comparison-list">
+            <p class="empty">Recent model outputs will appear here for side-by-side review.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/dist/main.js"></script>
+  </body>
+</html>
