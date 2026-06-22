@@ -1,0 +1,13 @@
+{
+  "id": "tiny-shakespeare-ngram",
+  "name": "Tiny Shakespeare n-gram",
+  "architecture": "ngram",
+  "dataset": "tiny-shakespeare",
+  "artifact_path": "models/artifacts/tiny-shakespeare-ngram/model.json",
+  "tokenizer": "word-level",
+  "parameters": 0,
+  "context_window": 128,
+  "max_output_tokens": 80,
+  "supported_options": ["max_tokens", "context_window", "top_k", "seed"],
+  "notes": "Placeholder registry entry for developing the backend API contract."
+}
