@@ -1,0 +1,71 @@
+{
+  "order": 3,
+  "transitions": {
+    "": {
+      "To": 4,
+      "The": 2,
+      "What": 1
+    },
+    "To": {
+      "be": 5
+    },
+    "To be": {
+      "or": 5,
+      "a": 1
+    },
+    "be or": {
+      "not": 5
+    },
+    "or not": {
+      "to": 5
+    },
+    "not to": {
+      "be": 5
+    },
+    "to be": {
+      "that": 3,
+      "still": 1
+    },
+    "be that": {
+      "is": 3
+    },
+    "that is": {
+      "the": 3
+    },
+    "is the": {
+      "question": 3
+    },
+    "The": {
+      "king": 2,
+      "night": 1
+    },
+    "The king": {
+      "is": 2
+    },
+    "king is": {
+      "coming": 2
+    },
+    "What": {
+      "light": 1
+    },
+    "What light": {
+      "through": 1
+    },
+    "light through": {
+      "yonder": 1
+    },
+    "through yonder": {
+      "window": 1
+    },
+    "yonder window": {
+      "breaks": 1
+    }
+  },
+  "fallback": {
+    "the": 8,
+    "be": 6,
+    "to": 6,
+    "and": 4,
+    "question": 2
+  }
+}

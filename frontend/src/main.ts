@@ -2,17 +2,17 @@ import { generateText, GenerationOptions, GenerationResponse, listModels, ModelI
 
 const fallbackModels: ModelInfo[] = [
   {
-    id: "tiny-shakespeare-ngram",
-    name: "Tiny Shakespeare n-gram",
+    id: "tiny-shakespeare-demo-ngram",
+    name: "Tiny Shakespeare Demo n-gram",
     architecture: "ngram",
     dataset: "tiny-shakespeare",
-    artifact_path: "models/artifacts/tiny-shakespeare-ngram/model.json",
+    artifact_path: "models/artifacts/tiny-shakespeare-demo-ngram/model.json",
     tokenizer: "word-level",
     parameters: 0,
     context_window: 128,
     max_output_tokens: 80,
     supported_options: ["max_tokens", "context_window", "top_k", "seed"],
-    notes: "Local placeholder metadata while backend wiring is in progress.",
+    notes: "Hand-authored demo artifact for exercising the UI and API; not a trained model.",
   },
 ];
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.generation import SUPPORTED_ARCHITECTURES, generate_placeholder_response
+from app.generation import GenerationError, SUPPORTED_ARCHITECTURES, generate_response
 from app.models import (
     GenerationRequest,
     GenerationResponse,
@@ -56,4 +56,7 @@ def generate(
             detail=f"No generation support for architecture '{model.architecture}'.",
         )
 
-    return generate_placeholder_response(model, request.prompt, request.options)
+    try:
+        return generate_response(model, request.prompt, request.options)
+    except GenerationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc

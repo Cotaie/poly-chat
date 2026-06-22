@@ -19,5 +19,14 @@ uvicorn app.main:app --reload
 - `GET /api/models/{model_id}`
 - `POST /api/generate`
 
-The backend currently includes a placeholder adapter so the API contract can be
-developed before real local model inference is wired in.
+## N-gram artifacts
+
+The n-gram adapter reads local JSON artifacts referenced by model metadata. The
+demo artifact at `models/artifacts/tiny-shakespeare-demo-ngram/model.json` uses:
+
+- `order`: n-gram order, where `3` means trigram generation.
+- `transitions`: context strings mapped to next-token counts.
+- `fallback`: optional token counts used when no context match is found.
+
+Other model families should be added as separate adapters behind the same
+`POST /api/generate` contract.
