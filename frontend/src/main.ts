@@ -1,4 +1,11 @@
-import { generateText, GenerationOptions, GenerationResponse, listModels, ModelInfo } from "./api.ts";
+import {
+  generateText,
+  GenerationOptions,
+  GenerationResponse,
+  listModels,
+  ModelInfo,
+  trainNGramModel,
+} from "./api.ts";
 
 const fallbackModels: ModelInfo[] = [
   {
@@ -38,8 +45,20 @@ const metrics = requireElement("metrics");
 const comparisonList = requireElement("comparison-list");
 const statusText = requireElement("status");
 const errorText = requireElement("error");
+const corpusFileInput = requireElement("corpus-file") as HTMLInputElement;
+const trainModelIdInput = requireElement("train-model-id") as HTMLInputElement;
+const trainNameInput = requireElement("train-name") as HTMLInputElement;
+const trainDatasetInput = requireElement("train-dataset") as HTMLInputElement;
+const trainOrderInput = requireElement("train-order") as HTMLInputElement;
+const trainContextWindowInput = requireElement("train-context-window") as HTMLInputElement;
+const trainMaxOutputInput = requireElement("train-max-output") as HTMLInputElement;
+const trainOverwriteInput = requireElement("train-overwrite") as HTMLInputElement;
+const trainButton = requireElement("train-ngram");
+const trainingStatus = requireElement("training-status");
 
 generateButton.addEventListener("click", handleGenerate);
+trainButton.addEventListener("click", handleTrainNGram);
+corpusFileInput.addEventListener("change", handleCorpusFileChange);
 
 loadModels();
 render();
@@ -52,17 +71,81 @@ function requireElement(id: string): HTMLElement {
   return element;
 }
 
-async function loadModels() {
+async function loadModels(preferredModelId?: string) {
   try {
     const availableModels = await listModels();
     if (availableModels.length > 0) {
       models = availableModels;
-      selectedModel = availableModels[0];
+      selectedModel =
+        availableModels.find((model) => model.id === preferredModelId) ??
+        availableModels.find((model) => model.id === selectedModel.id) ??
+        availableModels[0];
       setStatus("Ready");
       render();
     }
   } catch {
     setStatus("Using local placeholder data");
+  }
+}
+
+function handleCorpusFileChange() {
+  const file = corpusFileInput.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, "");
+  if (!trainModelIdInput.value) {
+    trainModelIdInput.value = `${slugify(baseName)}-ngram`;
+  }
+  if (!trainNameInput.value) {
+    trainNameInput.value = `${baseName} n-gram`;
+  }
+  if (!trainDatasetInput.value) {
+    trainDatasetInput.value = slugify(baseName);
+  }
+}
+
+async function handleTrainNGram() {
+  const file = corpusFileInput.files?.[0];
+  if (!file) {
+    setTrainingStatus("Choose a plain text corpus file first.");
+    return;
+  }
+
+  const modelId = trainModelIdInput.value.trim();
+  const name = trainNameInput.value.trim();
+  const dataset = trainDatasetInput.value.trim();
+
+  if (!modelId || !name || !dataset) {
+    setTrainingStatus("Model ID, name, and dataset are required.");
+    return;
+  }
+
+  setStatus("Training...");
+  setTrainingStatus("Reading corpus file...");
+
+  try {
+    const corpusText = await file.text();
+    const response = await trainNGramModel({
+      model_id: modelId,
+      name,
+      dataset,
+      corpus_text: corpusText,
+      order: Number(trainOrderInput.value),
+      context_window: Number(trainContextWindowInput.value),
+      max_output_tokens: Number(trainMaxOutputInput.value),
+      overwrite: trainOverwriteInput.checked,
+    });
+
+    await loadModels(response.model.id);
+    setStatus("Ready");
+    setTrainingStatus(
+      `Saved ${response.model.name}: ${response.stats.tokens} tokens, ${response.stats.contexts} contexts.`,
+    );
+  } catch (error) {
+    setStatus("Ready");
+    setTrainingStatus(error instanceof Error ? error.message : "Training failed.");
   }
 }
 
@@ -193,4 +276,16 @@ function setStatus(message: string) {
 
 function setError(message: string) {
   errorText.textContent = message;
+}
+
+function setTrainingStatus(message: string) {
+  trainingStatus.textContent = message;
+}
+
+function slugify(value: string): string {
+  const slug = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "uploaded-corpus";
 }

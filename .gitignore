@@ -30,6 +30,8 @@ coverage/
 *.log
 
 # Local model artifacts
+models/registry/*
+!models/registry/tiny-shakespeare-demo-ngram.json
 models/artifacts/*
 !models/artifacts/tiny-shakespeare-demo-ngram/
 !models/artifacts/tiny-shakespeare-demo-ngram/model.json

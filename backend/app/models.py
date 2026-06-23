@@ -56,3 +56,22 @@ class GenerationResponse(BaseModel):
     usage: dict[str, int]
     timing: dict[str, int]
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class NGramTrainingRequest(BaseModel):
+    model_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]*$")
+    name: str = Field(min_length=1)
+    dataset: str = Field(min_length=1)
+    corpus_text: str = Field(min_length=1)
+    order: int = Field(ge=1, le=8)
+    context_window: int = Field(default=128, ge=1)
+    max_output_tokens: int = Field(default=80, ge=1)
+    overwrite: bool = False
+    notes: str = ""
+
+
+class NGramTrainingResponse(BaseModel):
+    model: ModelInfo
+    artifact_path: str
+    registry_path: str
+    stats: dict[str, int]

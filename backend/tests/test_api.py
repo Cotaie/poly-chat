@@ -4,8 +4,9 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
-from app.api.routes import generate, get_model, health, list_models
-from app.models import GenerationOptions, GenerationRequest
+from app.api.routes import generate, get_model, health, list_models, train_ngram
+from app.models import GenerationOptions, GenerationRequest, ModelInfo, NGramTrainingRequest
+from app.ngram_training import build_ngram_artifact, train_and_save_ngram_model
 from app.registry import ModelRegistry
 
 
@@ -132,3 +133,80 @@ def test_generate_rejects_options_outside_model_limits(tmp_path: Path) -> None:
         )
 
     assert exc.value.status_code == 400
+
+
+def test_build_ngram_artifact_counts_transitions() -> None:
+    artifact = build_ngram_artifact(
+        ["to", "be", "or", "not", "to", "be"],
+        order=3,
+    )
+
+    assert artifact["order"] == 3
+    assert artifact["transitions"]["to be"] == {"or": 1}
+    assert artifact["transitions"]["not to"] == {"be": 1}
+    assert artifact["fallback"]["to"] == 2
+
+
+def test_train_and_save_ngram_model_creates_registry_and_artifact(tmp_path: Path) -> None:
+    registry_dir = tmp_path / "registry"
+    artifacts_dir = tmp_path / "artifacts"
+    request = NGramTrainingRequest(
+        model_id="custom-ngram",
+        name="Custom n-gram",
+        dataset="uploaded-corpus",
+        corpus_text="to be or not to be",
+        order=3,
+        context_window=64,
+        max_output_tokens=24,
+    )
+
+    model, stats, artifact_path, registry_path = train_and_save_ngram_model(
+        request,
+        registry_dir=registry_dir,
+        artifacts_dir=artifacts_dir,
+    )
+
+    assert model.id == "custom-ngram"
+    assert model.artifact_path.endswith("custom-ngram/model.json")
+    assert stats["tokens"] == 6
+    assert stats["contexts"] > 0
+    assert artifact_path.exists()
+    assert registry_path.exists()
+
+
+def test_train_ngram_route_returns_saved_model(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    model = ModelInfo(
+        id="route-ngram",
+        name="Route n-gram",
+        architecture="ngram",
+        dataset="route-corpus",
+        artifact_path="models/artifacts/route-ngram/model.json",
+        tokenizer="word-level",
+        parameters=3,
+        context_window=128,
+        max_output_tokens=80,
+        supported_options=["max_tokens", "context_window", "top_k", "seed"],
+        notes="Test model.",
+    )
+
+    def fake_train_and_save_ngram_model(request: NGramTrainingRequest):
+        return model, {"tokens": 6}, tmp_path / "model.json", tmp_path / "route-ngram.json"
+
+    monkeypatch.setattr(
+        "app.api.routes.train_and_save_ngram_model",
+        fake_train_and_save_ngram_model,
+    )
+
+    response = train_ngram(
+        NGramTrainingRequest(
+            model_id="route-ngram",
+            name="Route n-gram",
+            dataset="route-corpus",
+            corpus_text="hello local model hello local chat",
+            order=2,
+            overwrite=True,
+        )
+    )
+
+    assert response.model.id == "route-ngram"
+    assert response.stats == {"tokens": 6}

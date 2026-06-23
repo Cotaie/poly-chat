@@ -18,6 +18,7 @@ uvicorn app.main:app --reload
 - `GET /api/models`
 - `GET /api/models/{model_id}`
 - `POST /api/generate`
+- `POST /api/ngram/train`
 
 ## N-gram artifacts
 
@@ -30,3 +31,13 @@ demo artifact at `models/artifacts/tiny-shakespeare-demo-ngram/model.json` uses:
 
 Other model families should be added as separate adapters behind the same
 `POST /api/generate` contract.
+
+## N-gram training
+
+`POST /api/ngram/train` accepts uploaded corpus text from the frontend, builds a
+word-level n-gram transition artifact, saves it under `models/artifacts/`, and
+writes matching model metadata under `models/registry/`.
+
+The current trainer is intentionally simple: whitespace tokenization, raw
+transition counts, and fallback counts from the corpus vocabulary. Smoothing and
+backoff can be added later once the basic workflow is stable.

@@ -29,6 +29,24 @@ export type GenerationResponse = {
   metadata: Record<string, unknown>;
 };
 
+export type NGramTrainingRequest = {
+  model_id: string;
+  name: string;
+  dataset: string;
+  corpus_text: string;
+  order: number;
+  context_window: number;
+  max_output_tokens: number;
+  overwrite: boolean;
+};
+
+export type NGramTrainingResponse = {
+  model: ModelInfo;
+  artifact_path: string;
+  registry_path: string;
+  stats: Record<string, number>;
+};
+
 const API_BASE_URL = "http://localhost:8000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -64,5 +82,14 @@ export function generateText(
       prompt,
       options,
     }),
+  });
+}
+
+export function trainNGramModel(
+  requestBody: NGramTrainingRequest,
+): Promise<NGramTrainingResponse> {
+  return request<NGramTrainingResponse>("/api/ngram/train", {
+    method: "POST",
+    body: JSON.stringify(requestBody),
   });
 }

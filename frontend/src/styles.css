@@ -188,7 +188,8 @@ input {
 }
 
 .output-panel,
-.comparison-panel {
+.comparison-panel,
+.training-panel {
   grid-column: span 1;
 }
 
@@ -237,6 +238,26 @@ pre {
   margin: 8px 0 0;
 }
 
+.training-panel {
+  display: grid;
+  gap: 12px;
+  grid-column: 2 / span 2;
+}
+
+.training-controls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.checkbox-label {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
 @media (max-width: 1100px) {
   .layout {
     grid-template-columns: 240px minmax(0, 1fr);
@@ -244,7 +265,8 @@ pre {
 
   .prompt-panel,
   .output-panel,
-  .comparison-panel {
+  .comparison-panel,
+  .training-panel {
     grid-column: 2;
   }
 }
@@ -266,12 +288,14 @@ pre {
   .sidebar,
   .prompt-panel,
   .output-panel,
-  .comparison-panel {
+  .comparison-panel,
+  .training-panel {
     grid-column: 1;
     grid-row: auto;
   }
 
   .controls,
+  .training-controls,
   .details-grid {
     grid-template-columns: 1fr;
   }

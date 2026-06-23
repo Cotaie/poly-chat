@@ -5,7 +5,10 @@ from app.models import (
     GenerationRequest,
     GenerationResponse,
     ModelInfo,
+    NGramTrainingRequest,
+    NGramTrainingResponse,
 )
+from app.ngram_training import NGramTrainingError, train_and_save_ngram_model
 from app.registry import ModelRegistry, get_model_registry
 
 router = APIRouter()
@@ -60,3 +63,20 @@ def generate(
         return generate_response(model, request.prompt, request.options)
     except GenerationError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@router.post("/api/ngram/train", response_model=NGramTrainingResponse)
+def train_ngram(
+    request: NGramTrainingRequest,
+) -> NGramTrainingResponse:
+    try:
+        model, stats, artifact_path, registry_path = train_and_save_ngram_model(request)
+    except NGramTrainingError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return NGramTrainingResponse(
+        model=model,
+        artifact_path=str(artifact_path),
+        registry_path=str(registry_path),
+        stats=stats,
+    )
