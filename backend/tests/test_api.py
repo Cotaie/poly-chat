@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 from app.api.routes import generate, get_model, health, list_models, train_ngram
 from app.models import GenerationOptions, GenerationRequest, ModelInfo, NGramTrainingRequest
-from app.ngram_training import build_ngram_artifact, train_and_save_ngram_model
+from app.ngram_training import build_ngram_artifact, tokenize_corpus, train_and_save_ngram_model
 from app.registry import ModelRegistry
 
 
@@ -136,15 +136,22 @@ def test_generate_rejects_options_outside_model_limits(tmp_path: Path) -> None:
 
 
 def test_build_ngram_artifact_counts_transitions() -> None:
-    artifact = build_ngram_artifact(
-        ["to", "be", "or", "not", "to", "be"],
-        order=3,
-    )
+    sentences = tokenize_corpus("to be or not to be")
+    artifact = build_ngram_artifact(sentences, order=3)
 
     assert artifact["order"] == 3
-    assert artifact["transitions"]["to be"] == {"or": 1}
+    assert artifact["transitions"][""] == {"<BOS>": 1}
+    assert artifact["transitions"]["<BOS> to"] == {"be": 1}
+    assert artifact["transitions"]["to be"] == {"<EOS>": 1, "or": 1}
     assert artifact["transitions"]["not to"] == {"be": 1}
+    assert artifact["transitions"]["to be"]["<EOS>"] == 1
     assert artifact["fallback"]["to"] == 2
+    assert "<BOS>" not in artifact["fallback"]
+    assert "<EOS>" not in artifact["fallback"]
+
+
+def test_tokenize_corpus_adds_special_tokens_without_leaking_manual_tokens() -> None:
+    assert tokenize_corpus("<BOS> hello model <EOS>") == [["<BOS>", "hello", "model", "<EOS>"]]
 
 
 def test_train_and_save_ngram_model_creates_registry_and_artifact(tmp_path: Path) -> None:
@@ -172,6 +179,54 @@ def test_train_and_save_ngram_model_creates_registry_and_artifact(tmp_path: Path
     assert stats["contexts"] > 0
     assert artifact_path.exists()
     assert registry_path.exists()
+
+
+def test_generation_stops_at_eos_without_returning_special_tokens(tmp_path: Path) -> None:
+    registry_dir = tmp_path / "registry"
+    artifact_dir = tmp_path / "artifacts" / "sentence-ngram"
+    registry_dir.mkdir()
+    artifact_dir.mkdir(parents=True)
+    artifact_path = artifact_dir / "model.json"
+    artifact_path.write_text(
+        json.dumps(
+            build_ngram_artifact(
+                tokenize_corpus("The capital of France is Paris."),
+                order=4,
+            )
+        ),
+        encoding="utf-8",
+    )
+    (registry_dir / "sentence-ngram.json").write_text(
+        json.dumps(
+            {
+                "id": "sentence-ngram",
+                "name": "Sentence n-gram",
+                "architecture": "ngram",
+                "dataset": "test",
+                "artifact_path": str(artifact_path),
+                "tokenizer": "word-level",
+                "parameters": 0,
+                "context_window": 64,
+                "max_output_tokens": 20,
+                "supported_options": ["max_tokens", "context_window", "top_k", "seed"],
+                "notes": "Test registry entry.",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    response = generate(
+        GenerationRequest(
+            model_id="sentence-ngram",
+            prompt="The capital of France",
+            options=GenerationOptions(max_tokens=20, top_k=1),
+        ),
+        ModelRegistry(registry_dir),
+    )
+
+    assert response.output == "The capital of France is Paris."
+    assert "<EOS>" not in response.output
+    assert response.usage["output_tokens"] == 2
 
 
 def test_train_ngram_route_returns_saved_model(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

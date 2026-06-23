@@ -6,6 +6,9 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 Candidate = tuple[str, int]
+BOS_TOKEN = "<BOS>"
+EOS_TOKEN = "<EOS>"
+SPECIAL_TOKENS = {BOS_TOKEN, EOS_TOKEN}
 
 
 class NGramModelError(RuntimeError):
@@ -54,6 +57,12 @@ class NGramTransitionModel:
                 break
 
             next_token = self.choose_next_token(candidates, top_k, rng)
+            if next_token == EOS_TOKEN:
+                break
+            if next_token == BOS_TOKEN:
+                tokens.append(next_token)
+                continue
+
             generated.append(next_token)
             tokens.append(next_token)
 
@@ -117,3 +126,15 @@ def tokenize(text: str) -> list[str]:
 
 def detokenize(tokens: list[str]) -> str:
     return " ".join(tokens)
+
+
+def strip_special_tokens(tokens: list[str]) -> list[str]:
+    return [token for token in tokens if token not in SPECIAL_TOKENS]
+
+
+def prepare_prompt_tokens(prompt: str) -> list[str]:
+    return [BOS_TOKEN, *strip_special_tokens(tokenize(prompt))]
+
+
+def visible_text(tokens: list[str]) -> str:
+    return detokenize(strip_special_tokens(tokens))

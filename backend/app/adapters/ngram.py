@@ -3,8 +3,9 @@ from time import perf_counter
 from app.adapters.ngram_transition_model import (
     NGramModelError,
     NGramTransitionModel,
-    detokenize,
-    tokenize,
+    prepare_prompt_tokens,
+    strip_special_tokens,
+    visible_text,
 )
 from app.models import GenerationOptions, GenerationResponse, ModelInfo
 
@@ -22,7 +23,7 @@ def generate_ngram_response(
     load_ms = round((perf_counter() - load_started) * 1000)
 
     generation_started = perf_counter()
-    input_tokens = tokenize(prompt)
+    input_tokens = prepare_prompt_tokens(prompt)
     generated_tokens = transition_model.generate_tokens(
         prompt_tokens=input_tokens,
         max_tokens=options.max_tokens or min(32, model.max_output_tokens),
@@ -34,10 +35,10 @@ def generate_ngram_response(
 
     return GenerationResponse(
         model_id=model.id,
-        output=detokenize([*input_tokens, *generated_tokens]),
+        output=visible_text([*input_tokens, *generated_tokens]),
         usage={
-            "input_tokens": len(input_tokens),
-            "output_tokens": len(generated_tokens),
+            "input_tokens": len(strip_special_tokens(input_tokens)),
+            "output_tokens": len(strip_special_tokens(generated_tokens)),
         },
         timing={"load_ms": load_ms, "generation_ms": generation_ms},
         metadata={
