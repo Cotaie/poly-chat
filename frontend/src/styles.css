@@ -19,6 +19,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -83,33 +84,6 @@ h2 {
   margin: 0 0 12px;
 }
 
-.model-list {
-  display: grid;
-  gap: 8px;
-}
-
-.model-button {
-  background: #ffffff;
-  border: 1px solid #dce2e5;
-  border-radius: 8px;
-  color: #1d2329;
-  cursor: pointer;
-  display: grid;
-  gap: 4px;
-  padding: 12px;
-  text-align: left;
-}
-
-.model-button span {
-  color: #68747c;
-  font-size: 13px;
-}
-
-.model-button.active {
-  background: #ecf8f2;
-  border-color: #7bc29b;
-}
-
 .details-grid {
   display: grid;
   gap: 10px;
@@ -165,7 +139,8 @@ label {
   font-size: 13px;
 }
 
-input {
+input,
+select {
   border: 1px solid #cbd3d8;
   border-radius: 8px;
   padding: 9px 10px;

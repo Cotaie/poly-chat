@@ -32,7 +32,7 @@ let models = fallbackModels;
 let selectedModel = fallbackModels[0];
 let history: RunResult[] = [];
 
-const modelList = requireElement("model-list");
+const modelSelect = requireElement("model-select") as HTMLSelectElement;
 const modelDetails = requireElement("model-details");
 const modelNotes = requireElement("model-notes");
 const promptInput = requireElement("prompt") as HTMLTextAreaElement;
@@ -59,6 +59,7 @@ const trainingStatus = requireElement("training-status");
 generateButton.addEventListener("click", handleGenerate);
 trainButton.addEventListener("click", handleTrainNGram);
 corpusFileInput.addEventListener("change", handleCorpusFileChange);
+modelSelect.addEventListener("change", handleModelSelect);
 
 loadModels();
 render();
@@ -193,24 +194,32 @@ function render() {
 }
 
 function renderModelList() {
-  modelList.replaceChildren(
+  modelSelect.replaceChildren(
     ...models.map((model) => {
-      const button = document.createElement("button");
-      button.className = model.id === selectedModel.id ? "model-button active" : "model-button";
-      button.type = "button";
-      button.innerHTML = `
-        <strong>${model.name}</strong>
-        <span>${model.architecture} / ${model.dataset}</span>
-      `;
-      button.addEventListener("click", () => {
-        selectedModel = model;
-        maxTokensInput.max = String(model.max_output_tokens);
-        contextWindowInput.max = String(model.context_window);
-        render();
-      });
-      return button;
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = `${model.name} (${model.architecture} / ${model.dataset})`;
+      return option;
     }),
   );
+  modelSelect.value = selectedModel.id;
+  syncModelLimits();
+}
+
+function handleModelSelect() {
+  const model = models.find((candidate) => candidate.id === modelSelect.value);
+  if (!model) {
+    return;
+  }
+
+  selectedModel = model;
+  syncModelLimits();
+  renderModelDetails();
+}
+
+function syncModelLimits() {
+  maxTokensInput.max = String(selectedModel.max_output_tokens);
+  contextWindowInput.max = String(selectedModel.context_window);
 }
 
 function renderModelDetails() {
